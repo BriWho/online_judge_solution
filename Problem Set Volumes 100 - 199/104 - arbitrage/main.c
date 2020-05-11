@@ -17,7 +17,7 @@ int main(){
 				scanf("%lf" ,&table[i][j]);
 			}
 		}
-		int r= 0 , isexist = 0;
+		int r= 0 , exist = 0;
 		int min_len = 32;
 		for(i = 0 ; i < n ; i++){
 			memset(a[0] , 0 ,sizeof(a[0]));
@@ -40,12 +40,12 @@ int main(){
 						ans[j] = t + 1;
 						t = records[j][t];
 					}
-					isexist= 1 , min_len = r;
+					exist= 1 , min_len = r;
 					break;	
 				}
 			}
 		}
-		if(isexist){
+		if(exist){
 			for(i = 0 ; i<= min_len ; i++)
 				printf("%d%c" ,ans[i], " \n"[i==min_len]);
 		}else{
