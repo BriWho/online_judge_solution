@@ -15,8 +15,8 @@ int main(){
 			unsigned int a = 0;
 			for(i = 0 ; i < 1* strlen(c) ; i++ )
 				a = ((a << 8) | c[i]) % G;
-			a = G - (a << 16)%G;
-			printf("%02X %02X\n" , (a >> 8)&255 , a & 255);
+			a = G - (a << 16) % G;
+			printf("%02X %02X\n" , (a >> 8) & 255 , a & 255);
 		}
 	}
 
