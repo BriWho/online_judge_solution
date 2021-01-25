@@ -30,10 +30,10 @@ int main(){
 			break;
 		}
 
-		double min_x = min(ceil(points[0].x) , min(ceil(points[1].x) , ceil(points[2].x)));
-		double max_x = max(floor(points[0].x) , max(floor(points[1].x) , floor(points[2].x)));
-		double min_y = min(ceil(points[0].y) , min(ceil(points[1].y) , ceil(points[2].y)));
-		double max_y = max(floor(points[0].y) , max(floor(points[1].y) , floor(points[2].y)));
+		double min_x = ceil(min(points[0].x , min(points[1].x , points[2].x)));
+		double max_x = floor(max(points[0].x , max(points[1].x ,points[2].x)));
+		double min_y = ceil(min(points[0].y , min(points[1].y , points[2].y)));
+		double max_y = floor(max(points[0].y , max(points[1].y , points[2].y)));
 
 		if(cross(points[0] , points[1] , points[2]) < 0)
 			swap(Point , points[1] , points[2]);
