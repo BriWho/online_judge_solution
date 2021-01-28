@@ -3,14 +3,11 @@
 
 int bfs(int x , int y , int k , int m , int n){
 	if(k < 1) return 0;
-	int ret = 0;
-	if(x - k <= m && x + k >= m && y - k <= n && y + k >= n)
-		ret++;
-	ret += bfs(x - k, y - k, k/2, m, n);
-	ret += bfs(x + k, y - k, k/2, m, n);
-	ret += bfs(x + k, y + k, k/2, m, n);
-	ret += bfs(x - k, y + k, k/2, m, n);
-	return ret;
+	return bfs(x - k, y - k, k/2, m, n)+
+		bfs(x + k, y - k, k/2, m, n) +
+		bfs(x + k, y + k, k/2, m, n) +
+		bfs(x - k, y + k, k/2, m, n) +
+		(x - k <= m && x + k >= m && y - k <= n && y + k >= n);
 }
 
 int main(){
