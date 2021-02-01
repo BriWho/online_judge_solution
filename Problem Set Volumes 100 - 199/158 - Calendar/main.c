@@ -70,8 +70,7 @@ int main(){
 			for(i = 0 ; i < m ; i++){
 				memset(s , ' ' , sizeof(char) * 7) , s[7] = 0;
 				memset(s , '*' , sizeof(char) * event_p[i] -> star);
-				if(event_p[i] -> day == D && event_p[i] -> month == M)
-					strcpy(s , "*TODAY*");
+				if(event_p[i] -> diff == 0) strcpy(s , "*TODAY*");
 				printf("%3d%3d %7s %s\n" , event_p[i] -> day , event_p[i]-> month , s , event_p[i]-> e );
 			}
 		}
