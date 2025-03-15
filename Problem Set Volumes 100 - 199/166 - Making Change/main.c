@@ -1,8 +1,9 @@
 #include <stdio.h>
-#include <string.h>
+#include <limits.h>
+#define MAX_VAL 100 
 
 const int coin_value[6] = { 1, 2, 4, 10, 20 , 40 };
-int dp[128][128];
+
 
 int greedy_change(int amount){
     int i , n = 0;
@@ -14,21 +15,32 @@ int greedy_change(int amount){
 }
 
 int change_coins(int amount, int n_coins[]) {
-    int i , j;
-    int total = 0;
-    int coins[128];
+    int i , j, k ;
+    int dp[128];
+    int min_change = INT_MAX;
     
-    memset( dp , 0 , sizeof(dp));
+    for(i = 0 ; i <= MAX_VAL ; i++)
+        dp[i] = INT_MAX;
+    dp[0] = 0;
     
-    for(i = 0 ; i < 6; i++)
+    for(i = 0 ; i < 6; i++){
         for(j = 0 ; j < n_coins[j] ; j++)
-            coins[total++] = coin_value[i];
-            
-    for(i = 1; i <= total ; i++)
-        for(j = coins[i] ; j <= amount; j++)
-            if()
+            for(k = coin_value[i]; k <= MAX_VAL ; k++ )
+                if(dp[k - coin_value[i]] + 1 < dp[k] ){
+                     dp[k] = dp[k - coin_value[i]] + 1 ;     
+                }
+    }
     
-    return dp[total][amount];
+    for(i = 0 ; i <= amount; i++)
+        printf("%d%c" , dp[i] , " \n"[i==amount]);
+  /*  
+    for(i = amount; i <= MAX_VAL ; i++){
+        int change = dp[i] + greedy_change(i - amount);
+        if(change < min_change)
+            min_change = change;
+    }*/
+    
+    return dp[amount];
 }
 
 
