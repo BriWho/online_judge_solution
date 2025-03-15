@@ -13,13 +13,13 @@ int cont_seq(int stamps[], int idx) {
         memcpy(dp[i], dp[i-1], sizeof(char) * stamps[idx] * i);
         for(j = 0; j <= idx ;j++)
             for(k = stamps[j]; k <= stamps[idx]*i;k++)
-                dp[i][k] = dp[i-1][k-stamps[j]];
+                if(dp[i-1][k-stamps[j]])
+                dp[i][k] = 1;
     }
-
     int val = 0;
-    while(dp[H][val] != 0)
-        val++;
-    return val;
+    while(dp[H][val] != 0) val++;
+    
+    return val-1;
 
 }
 
@@ -32,8 +32,8 @@ void dfs(int stamps[], int idx , int max) {
         }
         return;
     }
-
     int i;
+
     for(i=stamps[idx-1]+1;i<= max+1;i++){
         stamps[idx]=i;
         dfs(stamps, idx+1, cont_seq(stamps, idx));
@@ -52,10 +52,10 @@ int main() {
         N = 0;
         dfs(stamps, 1, H);
 
-        for(i=0; i<H ;i++){
+        for(i=0; i<K;i++){
             printf("%3d", max_stamps[i]);
         }
-        printf("->%3d\n" , N );
+        printf(" ->%3d\n" , N );
     }
 
     return 0;
