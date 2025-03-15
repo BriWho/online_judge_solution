@@ -7,10 +7,10 @@ int H, K, N;
 
 int cont_seq(int stamps[], int idx) {
     int i, j , k;
-    memset(dp, 0 , sizeof(dp));
+    memset(dp[0], 0 , sizeof(dp[0]));
     dp[0][0]=1;
     for(i = 1;i <= H; i++){
-        memcpy(dp[i], dp[i-1], sizeof(char) * stamps[idx] * i);
+        memcpy(dp[i], dp[i-1], sizeof(dp[i]));
         for(j = 0; j <= idx ;j++)
             for(k = stamps[j]; k <= stamps[idx]*i;k++)
                 if(dp[i-1][k-stamps[j]])
@@ -45,16 +45,15 @@ int main() {
     int stamps[16];
     int i;
     while(scanf("%d %d", &H, &K)==2){
-        if(H==0 && K==0){
+        if(H==0 && K==0)
             break;
-        }
+
         stamps[0] = 1;
         N = 0;
         dfs(stamps, 1, H);
 
-        for(i=0; i<K;i++){
+        for(i=0; i<K;i++)
             printf("%3d", max_stamps[i]);
-        }
         printf(" ->%3d\n" , N );
     }
 
