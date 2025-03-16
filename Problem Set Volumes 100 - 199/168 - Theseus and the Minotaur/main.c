@@ -1,20 +1,25 @@
 #include <stdio.h>
 #include <string.h>
+#define toIdx(a) (a - 'A')
+#define toAlpha(i) (i + 'A')
 
-#define MAX_N 32
+int edge[32][32];
+int n_edge[32];
+int light[32];
 
-int flee(int edge[MAX_N][MAX_N] , int M , int T){
+int flee(int M , int T){
     int i;
-    for(i = 0 ;i < MAX_N ; i++)
-        if(edge[M][i] && i != T)
-            return i;
+    for(i = 0 ;i < n_edge[M] ; i++){
+        int e = edge[M][i];
+        if(!light[e] && e != T)
+            return e;
+    }
     return -1;
 }
 
 int main(){
     
     char input[256];
-    int edge[MAX_N][MAX_N];
     int k;
     int i;
     int M, T;
@@ -23,43 +28,41 @@ int main(){
         if(strcmp(input , "#") == 0)
             break;
             
-        memset(edge , 0 , sizeof(edge));
-            
+        memset(n_edge , 0 , sizeof(n_edge));
+        memset(light , 0 , sizeof(light));
+        
+        int cur, state = 0;
         for(i = 0 ; i < strlen(input) ;i++){
-            int cur = i;
-            i++;
-            if(input[i] == ':'){
-                i++;
-                while(input[i] != ';' && input[i] != '.'){
-                    edge[input[cur] - 'A'][input[i] - 'A'] = 1;
-                    i++;
-                }
-            }
+            if(input[i] == '.')
+                break;
+            if(input[i] == ';')
+                state = 0 , i++;
+            if(input[i] == ':')
+                state = 1 , i++;
+            if(state == 0)
+                cur = toIdx(input[i]);
+            if(state == 1)
+                edge[cur][n_edge[cur]++] = toIdx(input[i]);
         }
+        
         scanf("%s" , input);
-        M = input[0] - 'A';
+        M = toIdx(input[0]);
         scanf("%s" , input);
-        T = input[0] - 'A';
+        T = toIdx(input[0]);
         scanf("%d" ,&k);
         
-        int counter = k, next;
-        while((next = flee(edge, M , T)) >= 0){
-            if(counter == 0){
-                printf("%c " , T + 'A');
-                for(i = 0 ; i < MAX_N ; i++)
-                    edge[i][T] = 0;
-                counter = k;
-            }
-            counter--;
+        int counter = 0, next;
+        while((next = flee(M , T)) >= 0){
             T = M;
             M = next;
+            counter++;
+            if(counter%k == 0){
+                printf("%c " , toAlpha(T));
+                light[T] = 1;
+            }
         }
-        
-        if(counter == 0){
-            printf("%c " , T + 'A');
-        }
-        
-        printf("/%c\n" , M + 'A');
+
+        printf("/%c\n" , toAlpha(M));
     }
     return 0;
 }
