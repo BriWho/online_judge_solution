@@ -1,9 +1,8 @@
 #include <stdio.h>
-#include <limits.h>
-#define MAX_VAL 100 
-
+#define MAX_SUM 100 
+#define MAX 20000
+#define min(a,b) ((a < b)? a :b)
 const int coin_value[6] = { 1, 2, 4, 10, 20 , 40 };
-
 
 int greedy_change(int amount){
     int i , n = 0;
@@ -15,32 +14,35 @@ int greedy_change(int amount){
 }
 
 int change_coins(int amount, int n_coins[]) {
-    int i , j, k ;
-    int dp[128];
-    int min_change = INT_MAX;
+    int i , j , k;
+    int dp[2][128];
+    int* cur_dp = dp[0];
+    int* pre_dp = dp[1];
+    int min_change = MAX;
     
-    for(i = 0 ; i <= MAX_VAL ; i++)
-        dp[i] = INT_MAX;
-    dp[0] = 0;
+    for(i = 0 ; i <= MAX_SUM ; i++)
+        cur_dp[i] = MAX;
+
+    cur_dp[0] = 0;
+    for(i = 0 ; i < 6 ; i++){
+        for(j = 0 ; j < n_coins[i] ; j++){
+            
+            int* tmp_dp = cur_dp;
+            cur_dp = pre_dp;
+            pre_dp = tmp_dp;
     
-    for(i = 0 ; i < 6; i++){
-        for(j = 0 ; j < n_coins[j] ; j++)
-            for(k = coin_value[i]; k <= MAX_VAL ; k++ )
-                if(dp[k - coin_value[i]] + 1 < dp[k] ){
-                     dp[k] = dp[k - coin_value[i]] + 1 ;     
-                }
+            for(k = 0 ; k< coin_value[i] ; k++)
+                cur_dp[k] = pre_dp[k];
+            for(k = coin_value[i] ; k <= MAX_SUM ; k++)
+                cur_dp[k] = min(pre_dp[k] , pre_dp[k - coin_value[i]] + 1);
+        }
     }
     
-    for(i = 0 ; i <= amount; i++)
-        printf("%d%c" , dp[i] , " \n"[i==amount]);
-  /*  
-    for(i = amount; i <= MAX_VAL ; i++){
-        int change = dp[i] + greedy_change(i - amount);
-        if(change < min_change)
-            min_change = change;
-    }*/
-    
-    return dp[amount];
+    for(i = amount ; i <= MAX_SUM; i++){
+        min_change = min(min_change , cur_dp[i] + greedy_change(i - amount));
+    }
+
+    return min_change;
 }
 
 
@@ -61,7 +63,7 @@ int main() {
         
         amount = (a * 100 + b)/5;
         
-        printf("%d\n" , change_coins(amount, n_coins));
+        printf("%3d\n" , change_coins(amount, n_coins));
             
     }
 
