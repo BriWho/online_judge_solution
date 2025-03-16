@@ -38,9 +38,8 @@ int change_coins(int amount, int n_coins[]) {
         }
     }
     
-    for(i = amount ; i <= MAX_SUM; i++){
+    for(i = amount ; i <= MAX_SUM; i++)
         min_change = min(min_change , cur_dp[i] + greedy_change(i - amount));
-    }
 
     return min_change;
 }
