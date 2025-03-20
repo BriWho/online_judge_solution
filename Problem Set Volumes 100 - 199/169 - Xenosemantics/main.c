@@ -10,13 +10,23 @@ struct Word {
 };
 
 struct Word words[1026];
-int n_words = 0;
-char overlap[1026][1026];
+struct Word* repeat_words[1024];
+struct Word* true_words[1024];
+int n_words;
 
-int word_cmp(char* w1 , char* w2) {
+int cmp(const void* a , const void* b) {
+    struct Word* A = *(struct Word**)a , *B = *(struct Word**)b;
+    int a_last = A -> start[0] + A -> len;
+    int b_last = B -> start[0] + B -> len; 
+    if(a_last == b_last) return 0;
+    else if(a_last > b_last) return 1;
+    else return -1;
+}
+
+int word_cmp(struct Word* a , struct Word* b) {
     int i;
     for(i = 0 ; i < 26 ; i++)
-        if(w1 -> a[i] != w2 -> a[i])
+        if(a -> a[i] != b -> a[i])
             return 1;
     return 0;
 }
@@ -30,23 +40,28 @@ void insert_new_word(struct Word * w) {
         for(j = 0 ; j < w -> count ; j++)
             words[i].start[words[i].count++] = w -> start[j]; 
     else
-        memcpy(words[n_words++] ,  w , sizeof(struct Word));
+        memcpy(&words[n_words++] ,  w , sizeof(struct Word));
 }
 
-int filter_repeat_words() {
-    int i , n = 0;
-    for(i = 0 ; i < n_words ; i++)
-        if(words[i].count >= 2)
-            memcpy(&words[n++] , &word[i] , sizeof(struct Word));
-}
 
-int is_overlap(char* w1 , char * w2 ){
-    
-}
+int is_overlap(struct Word* a , struct Word * b ){
+    int a_idx = 0, b_idx = 0;
 
-void filter_overlap_words() {
-    int i , j , n = 0; 
-    memset( overlap , 0 , sizeof(overlap));
+    while( a_idx < a -> count &&  b_idx < b -> count ) {
+        int a_start = a -> start[a_idx];
+        int b_start = b -> start[b_idx];
+        if(a_start <= b_start) {
+            if(b_start < a_start + a -> len)
+                return 0;
+            a_idx++;
+        } else {
+            if(a_start < b_start + b -> len)
+                return 0;
+            b_idx++;
+        }
+    }
+
+    return 1;
 }
 
 
@@ -69,12 +84,13 @@ int main() {
         msg[m_len] = 0;
         if(buf[b_len - 1] == '-') 
             continue;
-        
+        n_words = 0;
+
         int j , k;
         struct Word word;
     
         for(i = 0 ; i < 26 ; i++){
-            memset(word , 0 , sizeof(struct Word));
+            memset(&word , 0 , sizeof(struct Word));
             
             for(j = 0 ; j < m_len ; j++){
                 if(msg[j] == 'a' + i) break;
@@ -86,13 +102,12 @@ int main() {
                 word.start[0] = 0;
                 word.count = 1;
                 
-                insert_new_word(word);
+                insert_new_word(&word);
             }
         }
-    
         for(i = 0 ; i < m_len ; i++){
 
-            memset(word , 0 , sizeof(struct Word));
+            memset(&word , 0 , sizeof(struct Word));
             
             for(j = i + 1 ; j < m_len ; j++){
                 if(msg[j] == msg[i]) break;
@@ -102,31 +117,41 @@ int main() {
             int len = j - i - 1;
             if(len >= 2 && len <= 250) {
                 word.len = len;
-                word.start[0] = j;
+                word.start[0] = i + 1;
                 word.count = 1;
                 
-                insert_new_word(word);
+                insert_new_word(&word);
             }
             
         }
-        
-        filter_repeat_words();
-        filter_overlap_words();
 
+        int n_repeat_words = 0 , n_true_words = 0;
 
-        for(i = 0 ; i < n_words ; i++){
-            int start = words[i].start;
-            for(j = 0 ; j < words[i].len ; j++)
-                printf("%c" , msg[start + j]);
-            printf("\n");
+        for(i = 0 ; i < n_words ; i++)
+            if(words[i].count >= 2)
+                repeat_words[n_repeat_words++] = &words[i];
+        for(i = 0 ; i < n_repeat_words ; i++){
+            for(j = 0 ; j < n_repeat_words ; j++ )
+                if(i != j && is_overlap(repeat_words[i] , repeat_words[j]) == 0){
+                    true_words[n_true_words++] = repeat_words[i];
+                    break;
+                }
         }
-        
-        printf("%s\n" , msg);
+
+        qsort(true_words , n_true_words , sizeof(struct Word*) , cmp);
+
+        for(i = 0 ; i < n_true_words ; i++){
+            int s = true_words[i] -> start[0];
+            for(j = 0 ; j < true_words[i] -> len ; j++)
+                putchar(msg[s + j]);
+            puts("");
+        }
+        if(i == n_true_words)
+            puts("*");
         
         m_len = 0;
  
     }
 
     return 0;
-}
 }
