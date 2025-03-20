@@ -76,8 +76,10 @@ int main() {
             break;
         
         int i, b_len = strlen(buf) - 1;
-        if(b_len == 0)
+        if(b_len == 0){
+            puts("*");
             continue;
+        }
         for(i = 0 ; i < b_len; i++)
             if('a' <= buf[i] && buf[i] <= 'z')
                 msg[m_len++] = buf[i];
@@ -105,19 +107,19 @@ int main() {
                 insert_new_word(&word);
             }
         }
-        for(i = 0 ; i < m_len ; i++){
+        for(i = 1 ; i < m_len ; i++){
 
             memset(&word , 0 , sizeof(struct Word));
             
-            for(j = i + 1 ; j < m_len ; j++){
-                if(msg[j] == msg[i]) break;
+            for(j = i ; j < m_len ; j++){
+                if(msg[j] == msg[i-1]) break;
                 word.a[msg[j] - 'a']++;
             }
             
-            int len = j - i - 1;
+            int len = j - i;
             if(len >= 2 && len <= 250) {
                 word.len = len;
-                word.start[0] = i + 1;
+                word.start[0] = i;
                 word.count = 1;
                 
                 insert_new_word(&word);
