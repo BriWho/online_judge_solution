@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 struct Word {
     int a[26];
@@ -10,8 +11,8 @@ struct Word {
 };
 
 struct Word words[1026];
-struct Word* repeat_words[1024];
-struct Word* true_words[1024];
+struct Word* repeat_words[1026];
+struct Word* true_words[1026];
 int n_words;
 
 int cmp(const void* a , const void* b) {
@@ -74,21 +75,16 @@ int main() {
     while(fgets(buf , sizeof(buf) , stdin) != NULL) {
         if(buf[0]=='#')
             break;
-        
-        int i, b_len = strlen(buf) - 1;
-        if(b_len == 0){
-            puts("*");
-            continue;
-        }
+        int i , j , k;
+        int b_len = strlen(buf);
         for(i = 0 ; i < b_len; i++)
-            if('a' <= buf[i] && buf[i] <= 'z')
+            if(islower(buf[i]))
                 msg[m_len++] = buf[i];
         msg[m_len] = 0;
-        if(buf[b_len - 1] == '-') 
+        if(b_len >= 2 && buf[b_len - 2] == '-') 
             continue;
         n_words = 0;
 
-        int j , k;
         struct Word word;
     
         for(i = 0 ; i < 26 ; i++){
@@ -148,8 +144,7 @@ int main() {
                 putchar(msg[s + j]);
             puts("");
         }
-        if(i == n_true_words)
-            puts("*");
+        puts("*");
         
         m_len = 0;
  
