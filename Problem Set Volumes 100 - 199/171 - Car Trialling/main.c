@@ -107,8 +107,7 @@ int parse_s_word(char* input , int L , int R , char* output , int OL) {
 }
 
 int parse_signwords(char* input , int L , int R , char* output , int OL) {
-    int i;
-    int s_word_tail = trim_and_call(parse_s_word , input , L , R , output , OL);
+    int i , s_word_tail = trim_and_call(parse_s_word , input , L , R , output , OL);
 
     if(s_word_tail != -1)
         return s_word_tail;
@@ -118,23 +117,23 @@ int parse_signwords(char* input , int L , int R , char* output , int OL) {
         if(signwords_tail == -1) continue;
         s_word_tail = trim_and_call(parse_signwords , input , i , R , output , signwords_tail + 1);
         if(s_word_tail != -1){
-
+            output[signwords_tail] = ' ';
+            return s_word_tail;
         }
     }
     return -1;
 }
 
 int parse_sign(char* input , int L , int R , char* output , int OL ){
-    if(input[L] == '\"' && input[R] == '\"')
-        return trim_and_call(parse_signwords , input , L + 1 , R - 1 , output , OL + 1) + 1;
+    if(input[L] == '\"' && input[R-1] == '\"'){
+        int signwords_tail = trim_and_call(parse_signwords , input , L + 1 , R - 1 , output , OL + 1);
+        output[OL] = output[signwords_tail] = '\"';
+        return signwords_tail + 1;
+    }
     return -1;
 }
 
 int parse_where(char* input , int L , int R , char* output , int OL){
-    int i;
-    for(i = L ; i < R ; i++)
-        printf("%c" , input[i]);
-    puts("");
     if(match_string(input , L , R , "AT") == L){
         int sign_tail = trim_and_call(parse_sign , input , L + 2 , R  , output , OL + 3);
         printf("sign %d\n" , sign_tail);
