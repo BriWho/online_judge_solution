@@ -107,21 +107,22 @@ int parse_s_word(char* input , int L , int R , char* output , int OL) {
 }
 
 int parse_signwords(char* input , int L , int R , char* output , int OL) {
-    int i , s_word_tail = trim_and_call(parse_s_word , input , L , R , output , OL);
-
-    if(s_word_tail != -1)
-        return s_word_tail;
-
-    for(i = L + 1; i < R ; i++){
-        int signwords_tail = trim_and_call(parse_signwords , input , L , i , output ,  OL );
-        if(signwords_tail == -1) continue;
-        s_word_tail = trim_and_call(parse_signwords , input , i , R , output , signwords_tail + 1);
-        if(s_word_tail != -1){
-            output[signwords_tail] = ' ';
-            return s_word_tail;
+    int i;
+    for(i = R - 1; i > L ; i--){
+        if(isspace(input[i-1])){
+            int signwords_tail = trim_and_call(parse_signwords , input , L , i , output , OL  );
+            if(signwords_tail != -1){
+                int s_word_tail = parse_s_word(input , i , R , output , signwords_tail + 1 );
+                if(s_word_tail != -1){
+                    output[signwords_tail] = ' '; 
+                    return s_word_tail;
+                }
+            }
+            return -1;
         }
     }
-    return -1;
+
+    return parse_s_word(input , L , R , output , OL );
 }
 
 int parse_sign(char* input , int L , int R , char* output , int OL ){
@@ -136,7 +137,6 @@ int parse_sign(char* input , int L , int R , char* output , int OL ){
 int parse_where(char* input , int L , int R , char* output , int OL){
     if(match_string(input , L , R , "AT") == L){
         int sign_tail = trim_and_call(parse_sign , input , L + 2 , R  , output , OL + 3);
-        printf("sign %d\n" , sign_tail);
         if(sign_tail != -1){
             memcpy(output + OL , "AT " , sizeof(char) * 3);
             return sign_tail;
@@ -210,7 +210,6 @@ int parse_directional(char* input , int L , int R , char* output , int OL ) {
             if(direction_tail == -1) continue;
 
             int where_tail = trim_and_call(parse_where, input , j , R , output , direction_tail + 1);
-            printf("%d\n" , where_tail);
             if(where_tail != -1){
                 output[how_tail] = output[direction_tail] = ' ';
                 return where_tail;
@@ -245,10 +244,13 @@ int parse_navigational(char* input , int L , int R , char* output , int OL) {
 int parse_instruction(char* input , int L , int R , char* output , int OL) {
     int and_head = match_string(input , L , R , "AND");
     if( and_head != -1){
+        printf("and_head: %d\n" , and_head);
         int navigational_tail = trim_and_call(parse_navigational, input , L , and_head , output , OL );
         if(navigational_tail != -1){
+            printf("nav_tail: %d\n" , navigational_tail);
             int time_keeping_tail = trim_and_call(parse_time_keeping ,input , and_head + 3, R , output , navigational_tail + 5);
             if(time_keeping_tail != -1){
+                printf("time_keeping_tail: %d\n" , time_keeping_tail);
                 memcpy( output + navigational_tail , " AND " , sizeof(char) * 5);
                 return time_keeping_tail;
             }
@@ -268,9 +270,11 @@ int main(){
     int count = 1;
 
     while(fgets(input, sizeof(input), stdin)) {
-        if(input[0] == '#') break;
         int i , len = strlen(input);
         input[--len] = 0;
+
+        if(strcmp("#" , input) == 0)
+            break;
 
         len = trim_and_call(parse_instruction , input , 0 , len , output , 0);
         if(len != -1){
