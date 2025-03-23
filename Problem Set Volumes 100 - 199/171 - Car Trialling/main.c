@@ -30,7 +30,7 @@ Bound find_text_from_right(char* input , Bound bound , char* text) {
             } else 
                 match_idx-- , i--;
         } else 
-            match_idx = len , bound.R = i , i--;
+            match_idx = len ,i-- , bound.R = i;
 
         if(0 == match_idx){
             bound.L = i;
@@ -140,8 +140,7 @@ int parse_sign(char* input , Bound bound , char* output , int OL ){
 }
 
 int parse_where(char* input , Bound bound , char* output , int OL){
-    Bound at_bound = { .L = bound.L , .R = bound.L + 3};
-    int at_tail = parse_bold_text(input , at_bound , output , OL , "AT ");
+    int at_tail = parse_bold_text(input , bound , output , OL , "AT ");
     //printf("at: %d\n" , at_tail);
     if(at_tail == -1) return -1;
     Bound sign_bound = { .L = bound.L+3 , .R = bound.R };
@@ -170,8 +169,8 @@ int parse_direction(char* input , Bound bound , char* output ,int OL ) {
 int parse_how(char* input , Bound bound, char* output , int OL) {
     int go_tail = parse_bold_text(input , bound , output , OL , "GO" );
     if(go_tail != -1) return go_tail;
-    Bound go_bound = { .L = bound.L , .R = bound.L + 3 };
-    go_tail = parse_bold_text(input , go_bound , output , OL , "GO " );
+
+    go_tail = parse_bold_text(input , bound , output , OL , "GO " );
     if(go_tail != -1){
         Bound when_bound = { .L = bound.L + 2 , .R = bound.R };
         int when_tail = parse_when(input , trim(input , when_bound) , output , OL + 3 );
@@ -215,8 +214,8 @@ int parse_directional(char* input , Bound bound , char* output , int OL ) {
 
 int parse_navigational(char* input , Bound bound , char* output , int OL) {
     Bound and_then_bound = find_text_from_right(input , bound , " AND THEN ");
-    
-    if(bound.L != -1){
+    //printf("and_then_bound: L: %d R: %d\n" , and_then_bound.L , and_then_bound.R);
+    if(and_then_bound.L != -1){
         Bound navigational_bound = { .L = bound.L , .R = and_then_bound.L };
         int navigational_tail = parse_navigational( input , navigational_bound , output , OL );
         //printf("nav %d\n" , navigational_tail);
@@ -238,13 +237,15 @@ int parse_navigational(char* input , Bound bound , char* output , int OL) {
 int parse_instruction(char* input , Bound bound , char* output , int OL) {
     Bound and_bound = find_text_from_right(input , bound , " AND ");
 
-    printf("%d %d\n" , and_bound.L , and_bound.R);
+    //printf("%d %d\n" , and_bound.L , and_bound.R);
     if( and_bound.L != -1){
         Bound navigational_bound = { .L = bound.L , .R = and_bound.L };
         int navigational_tail = parse_navigational( input , navigational_bound , output , OL );
+        //printf("nav_tail: %d\n" , navigational_tail);
         if(navigational_tail != -1){
             Bound time_keeping_bound = { .L = and_bound.R , .R = bound.R };
             int time_keeping_tail = parse_time_keeping(input , time_keeping_bound , output , navigational_tail + 5);
+            //printf("time_keeping: %d\n" , time_keeping_tail);
             if(time_keeping_tail != -1){
                 memcpy( output + navigational_tail , " AND " , sizeof(char) * 5);
                 return time_keeping_tail;
