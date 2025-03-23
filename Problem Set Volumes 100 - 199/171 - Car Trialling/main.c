@@ -27,19 +27,20 @@ int trim_and_call(int (*parse)(char* , int , int , char* , int) ,
 }
 
 int find_text_from_right(char* input , int L , int R , char* text) {
-    int i , len = strlen(text);
+    int i = R, len = strlen(text);
     int match_idx = len;
-    for(i = R - 1 ; i >= L ; i--){
-        if(input[i] == text[match_idx - 1]){
+    while(i > L){
+        if(input[i-1] == text[match_idx - 1]){
             if(isspace(text[match_idx - 1])){
-                match_idx = trim_right(input , L , R );
-                i = trim_right(text , L , i);
+                i = trim_right(input , L , i);
+                match_idx = trim_right(text , 0 , match_idx );
             } else 
-                match_idx--;
-            if(0 == match_idx )
-                return i;
+                match_idx-- , i--;
         } else 
-            match_idx = len;
+            match_idx = len , i--;
+
+        if(0 == match_idx)
+            return i;
     }
     return -1;
 }
@@ -77,13 +78,13 @@ int parse_cas(char* input , int L , int R ,char* output , int OL) {
     return parse_bold_text(input , L , R , output , OL , "CAS");
 }
 int parse_change(char* input , int L , int R , char* output , int OL){
-    int to_head = find_text_from_right(input , L , R , "TO");
+    int to_head = find_text_from_right(input , L , R , " TO ");
     if(to_head == -1) return -1;
         
     int cas_tail = trim_and_call(parse_cas , input , L , to_head , output , OL);
     if(cas_tail == -1) return -1;
 
-    int kmh_head = find_text_from_right(input , to_head + 2 , R , "KMH");
+    int kmh_head = find_text_from_right(input , to_head + 2 , R , " KMH");
     if(kmh_head == -1) return -1;
     
     int nnn_tail = trim_and_call(parse_nnn , input , to_head + 2 , kmh_head , output , cas_tail + 4);
@@ -144,10 +145,10 @@ int parse_sign(char* input , int L , int R , char* output , int OL ){
 }
 
 int parse_where(char* input , int L , int R , char* output , int OL){
-    int at_tail = parse_bold_text(input , L , L + 2 , output , OL , "AT");
+    int at_tail = parse_bold_text(input , L , L + 3 , output , OL , "AT ");
     //printf("at: %d\n" , at_tail);
     if(at_tail == -1) return -1;
-    int sign_tail = trim_and_call(parse_sign , input , L + 2 , R  , output , OL + 3);
+    int sign_tail = trim_and_call(parse_sign , input , L + 3 , R  , output , OL + 3);
         //printf("sign: %d\n" , sign_tail);
     if(sign_tail == -1) return -1;
     output[OL + 2] = ' ';
@@ -211,7 +212,7 @@ int parse_directional(char* input , int L , int R , char* output , int OL ) {
 }
 
 int parse_navigational(char* input , int L , int R , char* output , int OL) {
-    int and_then_head = find_text_from_right(input , L , R , "AND THEN");
+    int and_then_head = find_text_from_right(input , L , R , " AND THEN ");
     
     if(and_then_head != -1){
         int navigational_tail = trim_and_call(parse_navigational , input , L , and_then_head , output , OL );
@@ -231,7 +232,7 @@ int parse_navigational(char* input , int L , int R , char* output , int OL) {
 
 
 int parse_instruction(char* input , int L , int R , char* output , int OL) {
-    int and_head = find_text_from_right(input , L , R , "AND");
+    int and_head = find_text_from_right(input , L , R , " AND ");
 
     if( and_head != -1){
         int navigational_tail = trim_and_call(parse_navigational, input , L , and_head , output , OL );
