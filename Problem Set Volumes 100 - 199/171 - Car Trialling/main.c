@@ -5,20 +5,6 @@
 
 #define MAX_LENGTH 128
 
-int find_text_from_right(char* input , int L , int R , char* text) {
-    int i , j , len = strlen(text);
-    int match_idx = len;
-    for(i = R - 1 ; i >= L ; i--){
-        if(input[i] == text[match_idx - 1]){
-            match_idx--;
-            if(0 == match_idx )
-                return i;
-        } else 
-            match_idx = len;
-    }
-    return -1;
-}
-
 int trim_left(char* input , int L , int R){
     int i;
     for(i = L ; i < R ; i++)
@@ -39,6 +25,25 @@ int trim_and_call(int (*parse)(char* , int , int , char* , int) ,
     char* input , int L , int R , char* output , int OL ) {
     return parse(input , trim_left(input , L , R ) , trim_right(input , L , R) , output , OL);
 }
+
+int find_text_from_right(char* input , int L , int R , char* text) {
+    int i , len = strlen(text);
+    int match_idx = len;
+    for(i = R - 1 ; i >= L ; i--){
+        if(input[i] == text[match_idx - 1]){
+            if(isspace(text[match_idx - 1])){
+                match_idx = trim_right(input , L , R );
+                i = trim_right(text , L , i);
+            } else 
+                match_idx--;
+            if(0 == match_idx )
+                return i;
+        } else 
+            match_idx = len;
+    }
+    return -1;
+}
+
 
 int parse_bold_text(char* input , int L , int R , char* output , int OL , char* text) {
     int len = strlen(text);
