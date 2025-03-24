@@ -6,37 +6,6 @@
 #define MAX_LENGTH 128
 #define MAX_N 128
 
-char shift(char text[MAX_LENGTH]){
-    int i , len = strlen(text);
-    char e = text[0];
-    for(i = 1 ; i < len ; i++)
-        text[i-1] = text[i];
-    text[len - 1] = 0;
-    return e;
-}
-
-void unshift(char text[MAX_LENGTH] , char c){
-    int i , len = strlen(text);
-    for(i = len ; i > 0 ; i--)
-        text[i] = text[i-1];
-    text[0] = c;
-    text[len+1] = 0;
-}
-
-char pop(char text[MAX_LENGTH]) {
-    int len = strlen(text);
-    char e = text[len -1];
-    text[len - 1] = 0;
-    return e;
-}
-
-void push(char text[MAX_LENGTH] , char c){
-    int len = strlen(text);
-    text[len] = c;
-    text[len + 1] = 0;
-}
-
-
 int is_digit(char d){
     return '0' <= d && d <= '9';
 }
@@ -104,9 +73,10 @@ int parse_sign(char text[][MAX_LENGTH] , int L , int R){
     int n = 0 , state = 0 , m = 0;
     for(i = 1 ; i < len -1 ; i++){
         if(isspace(text[L][i])){
-            if(state == 1) 
+            if(state == 1){
                 tmp[n++][m] = 0;
-            state = 0 , m = 0;
+                state = 0 , m = 0;
+            }
         } else {
             tmp[n][m++] = text[L][i];
             state = 1;
@@ -114,6 +84,7 @@ int parse_sign(char text[][MAX_LENGTH] , int L , int R){
     }
     if(state == 1)
         tmp[n++][m] = 0;
+    if(n < 1) return 0; 
     if(parse_signwords(tmp , n)){
         text[L][1] = 0;
         for(i = 0 ; i < n - 1; i++){
@@ -211,10 +182,10 @@ int main(){
                 if(state == 0)
                     state = 1;
             }
-    
         }
         if(state == 1 || state == 2)
             text[n++][m] = 0;
+
         if(parse_instruction(text , 0 , n)){
             printf("%3d. " , count);
             for(i = 0 ; i < n ; i++)
