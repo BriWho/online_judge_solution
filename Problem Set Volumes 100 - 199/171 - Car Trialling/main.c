@@ -177,20 +177,20 @@ int main(){
             break;
         int n = 0 ,state = 0 , m = 0;
         for(i = 0 ; i < len ; i++){
-            if(isspace(input[i])){
+            if(state != 2 && isspace(input[i])){
                 if(state == 1) 
                     text[n++][m] = 0;
                 state = 0 , m = 0;
             } else if(input[i] == '\"') {
                 if(state == 2) state = 0;
-                } else state = 2;
-                
+                else state = 2;
+                text[n][m++] = input[i];
             } else {
                 text[n][m++] = input[i];
                 state = 1;
             }
         }
-        if(state == 1)
+        if(state == 1 || state == 2)
             text[n++][m] = 0;
         if(parse_instruction(text , 0 , n)){
             printf("%3d. " , count);
