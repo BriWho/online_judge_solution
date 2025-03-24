@@ -83,8 +83,7 @@ int is_letter(char a){
     return ('A' <= a && a <= 'Z') || a == '.'; 
 }
 
-int parse_s_word(char text[][MAX_LENGTH] , int L , int R) {
-    if(R - L != 1) return 0;
+int parse_s_word(char text[][MAX_LENGTH] , int L) {
     int i , len = strlen(text[L]);
     for(i = 0 ; i < len ; i++)
         if(!is_letter(text[L][i]))
@@ -92,16 +91,37 @@ int parse_s_word(char text[][MAX_LENGTH] , int L , int R) {
     return 1;
 }
 
-int parse_signwords(char text[][MAX_LENGTH] , int L , int R) {
-    if(R - L == 1) return parse_s_word(text , L , R);
-    return parse_signwords(text , L , R - 1) && parse_s_word(text , R - 1 , R);
+int parse_signwords(char text[][MAX_LENGTH] , int N) {
+    if(N == 1) return parse_s_word(text , N - 1);
+    return parse_signwords(text , N - 1) && parse_s_word(text , N - 1);
 }
 
 int parse_sign(char text[][MAX_LENGTH] , int L , int R){
-    if(R - L < 1) return 0;
-    int l = shift(text[L]), r = pop(text[R-1]);
-    if(l == '\"' && r == '\"' && parse_signwords(text , L , R)){
-        unshift(text[L] , '\"'), push(text[R-1] , '\"');
+    int len = strlen(text[L]);
+    if(R - L != 1 || text[L][0] != '\"' || text[L][len-1] != '\"') 
+        return 0;
+    char i , tmp[MAX_N][MAX_LENGTH];
+    int n = 0 , state = 0 , m = 0;
+    for(i = 1 ; i < len -1 ; i++){
+        if(isspace(text[L][i])){
+            if(state == 1) 
+                tmp[n++][m] = 0;
+            state = 0 , m = 0;
+        } else {
+            tmp[n][m++] = text[L][i];
+            state = 1;
+        }
+    }
+    if(state == 1)
+        tmp[n++][m] = 0;
+    if(parse_signwords(tmp , n)){
+        text[L][1] = 0;
+        for(i = 0 ; i < n - 1; i++){
+            strcat( text[L] , tmp[i] );
+            strcat( text[L] , " ");
+        }
+        strcat( text[L] , tmp[n-1] );
+        strcat( text[L] , "\"");
         return 1;
     }
     return 0;
@@ -177,18 +197,21 @@ int main(){
             break;
         int n = 0 ,state = 0 , m = 0;
         for(i = 0 ; i < len ; i++){
-            if(state != 2 && isspace(input[i])){
-                if(state == 1) 
+            if(isspace(input[i]) && state!=2){
+                if(state == 1){ 
                     text[n++][m] = 0;
-                state = 0 , m = 0;
+                    state = 0 , m = 0;
+                }
             } else if(input[i] == '\"') {
-                if(state == 2) state = 0;
+                if(state == 2) state = 1;
                 else state = 2;
                 text[n][m++] = input[i];
             } else {
                 text[n][m++] = input[i];
-                state = 1;
+                if(state == 0)
+                    state = 1;
             }
+    
         }
         if(state == 1 || state == 2)
             text[n++][m] = 0;
