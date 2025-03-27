@@ -2,34 +2,35 @@
 #include <string.h>
 #include <ctype.h>
 
-int parse(char* input , int* new_vars, int* vars , int L , int R){
-    int i , lval = 0 , sign = 1, var_idx;
+int parse(char* input , int* vars , int L , int R){
+    int i , lval = 0 , sign = 1;
     int brackets = 0;
+    char var_idx = -1;
 
     for(i = L ; i < R ; i++){
         char c = input[i];
         if(c == '(')
             brackets++;
-        if(c == ')'){
+        else if(c == ')'){
             brackets--;
             if(brackets == 0)
-                lval = parse(input , vars , new_vars , L + 1 , i);
+                lval = parse(input , vars , L + 1 , i);
         }
-        if(brackets > 0) continue;
-        if('A' <= c && c <= 'Z'){
+        else if('A' <= c && c <= 'Z')
             var_idx = c - 'A';
-            lval = vars[var_idx];
-        }
-        if('0' <= c && c <= '9')
+        else if('0' <= c && c <= '9')
             lval = 10 * lval + (c - '0');
-        if(c == '=')
-            return new_vars[var_idx] = parse(input , vars , new_vars , i + 1 , R);
-        if(c == '_')
+        else if(c == '_')
             sign = -1;
-        if(c == '+') return sign * lval + parse(input , vars , new_vars , i + 1 , R);
-        if(c=='-') return sign * lval - parse(input , vars , new_vars , i+1 , R);
-        if(c=='*') return sign * lval * parse(input , vars , new_vars , i + 1 , R);
-        if(c=='/') return sign * lval / parse(input , vars , new_vars , i + 1 , R);
+        else {
+            int rval = parse(input , vars , i + 1 , R);
+            lval = var_idx < 0? lval : vars[var_idx];
+            if(c == '=') return vars[var_idx] = rval;
+            if(c == '+') return sign * lval + rval;
+            if(c=='-') return sign * lval - rval;
+            if(c=='*') return sign * lval * rval;
+            if(c=='/') return sign * lval / rval;
+        }
     }
 
     return sign * lval;
@@ -52,9 +53,9 @@ int main(){
                 input[n++] = input[i];
         }
         input[n] = 0;
-        memcpy(vars[0] ,  vars[1] , sizeof(int) * 26);
+        memcpy(vars[1] ,  vars[0] , sizeof(int) * 26);
 
-        parse(input , vars[0] , vars[1] , 0 , n);
+        parse(input , vars[0]  , 0 , n);
 
         int n_change = 0;
         for( i = 0 ; i < 26 ; i++){
