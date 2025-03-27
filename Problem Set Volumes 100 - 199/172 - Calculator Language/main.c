@@ -11,11 +11,13 @@ int parse(char* input , int* vars , int L , int R){
         char c = input[i];
         if(c == '(')
             brackets++;
-        else if(c == ')'){
-            brackets--;
-            if(brackets == 0)
-                lval = parse(input , vars , L + 1 , i);
-        }
+        else if(brackets > 0){
+            if(c == ')'){
+                brackets--;
+                if(brackets == 0)
+                    lval = parse(input , vars , L + 1 , i);
+            }
+        } 
         else if('A' <= c && c <= 'Z')
             var_idx = c - 'A';
         else if('0' <= c && c <= '9')
@@ -27,13 +29,13 @@ int parse(char* input , int* vars , int L , int R){
             lval = var_idx < 0? lval : vars[var_idx];
             if(c == '=') return vars[var_idx] = rval;
             if(c == '+') return sign * lval + rval;
-            if(c=='-') return sign * lval - rval;
-            if(c=='*') return sign * lval * rval;
-            if(c=='/') return sign * lval / rval;
+            if(c == '-') return sign * lval - rval;
+            if(c == '*') return sign * lval * rval;
+            if(c == '/') return sign * lval / rval;
         }
     }
 
-    return sign * lval;
+    return sign * (var_idx < 0 ? lval : vars[var_idx]);
 
 }
 
