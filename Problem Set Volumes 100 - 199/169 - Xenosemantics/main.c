@@ -73,15 +73,16 @@ int main() {
     int m_len = 0;
     
     while(fgets(buf , sizeof(buf) , stdin) != NULL) {
-        if(buf[0]=='#')
+        int b_len = strlen(buf);
+        buf[--b_len] = 0;
+        if(strcmp( buf , "#") == 0)
             break;
         int i , j , k;
-        int b_len = strlen(buf);
         for(i = 0 ; i < b_len; i++)
             if(islower(buf[i]))
                 msg[m_len++] = buf[i];
         msg[m_len] = 0;
-        if(b_len >= 2 && buf[b_len - 2] == '-') 
+        if(b_len >= 1 && buf[b_len - 1] == '-') 
             continue;
         n_words = 0;
 
