@@ -40,9 +40,11 @@ int main(){
 
     while(scanf("%s" , input) != EOF){
         if(strcmp(input , "#") == 0){
-            int i , j , first = 1;
+            int i;
+            printf("n %d\n" , n_profiles);
             for(i = 1 ; i <= n_profiles ; i++){
                 printf("%d:" , i);
+                int j , first = 1;
                 for(j = 1; j <= n_titles ; j++){
                     if(result[i][j]){
                         if(first) printf(" ") , first = 0;
@@ -105,9 +107,10 @@ int main(){
 
                 int j , idx = find_keyword_idx( word);
 
-                for(i = 0 ; i < n_title_keywords ; i++){
+                for(i = 0 ; idx >= 0 && i < n_title_keywords; i++){
                     int old_keyword_idx = title_keywords_idx[i];
-                    for(j = 0 ; j < pair_of_keywords_profile_count[old_keyword_idx][idx] ; j++){
+                    if(old_keyword_idx <= 0) continue;
+                    for(j = 0 ; j < pair_of_keywords_profile_count[old_keyword_idx][idx]; j++){
                         int profile_idx = pair_of_keywords_profile_map[old_keyword_idx][idx][j];
                         if(n_title_keywords - i > thresholds[profile_idx])
                             result[profile_idx][n_titles] = 1;
