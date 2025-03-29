@@ -3,13 +3,14 @@
 #include <ctype.h>
 
 enum { NONE , PROFILE , TITLE };
-#define MAX_N_KEYWORDS 128
+#define MAX_KEYWORD_LENGTH 128
+#define MAX_N_KEYWORDS 512
 #define MAX_N_PROFILES 64
 #define MAX_N_TITLES 256
 
 int pair_of_keywords_profile_map[MAX_N_KEYWORDS][MAX_N_KEYWORDS][MAX_N_PROFILES];
 int pair_of_keywords_profile_count[MAX_N_KEYWORDS][MAX_N_KEYWORDS];
-char keywords[MAX_N_KEYWORDS][MAX_N_KEYWORDS];
+char keywords[MAX_N_KEYWORDS][MAX_KEYWORD_LENGTH];
 int n_keywords = 0;
 
 int find_keyword_idx(char word[128]){
@@ -41,13 +42,12 @@ int main(){
     while(scanf("%s" , input) != EOF){
         if(strcmp(input , "#") == 0){
             int i;
-            printf("n %d\n" , n_profiles);
             for(i = 1 ; i <= n_profiles ; i++){
-                printf("%d:" , i);
+                printf("%d: " , i);
                 int j , first = 1;
                 for(j = 1; j <= n_titles ; j++){
                     if(result[i][j]){
-                        if(first) printf(" ") , first = 0;
+                        if(first) first = 0;
                         else printf(",");
                         printf("%d" , j );
                     }
@@ -109,10 +109,10 @@ int main(){
 
                 for(i = 0 ; idx >= 0 && i < n_title_keywords; i++){
                     int old_keyword_idx = title_keywords_idx[i];
-                    if(old_keyword_idx <= 0) continue;
+                    if(old_keyword_idx < 0) continue;
                     for(j = 0 ; j < pair_of_keywords_profile_count[old_keyword_idx][idx]; j++){
                         int profile_idx = pair_of_keywords_profile_map[old_keyword_idx][idx][j];
-                        if(n_title_keywords - i > thresholds[profile_idx])
+                        if(n_title_keywords - i - 1 <= thresholds[profile_idx])
                             result[profile_idx][n_titles] = 1;
                     }
                 }
