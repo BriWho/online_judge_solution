@@ -17,12 +17,12 @@ int find_idx(char strategy[] , int L , int R , char* w){
     int i , match_idx = 0;
     int len = strlen(w);
     for(i = L ; i < R ; i++){
+        if(strategy[i] != w[match_idx])
+            match_idx = 0;
         if(strategy[i] == w[match_idx]){
             match_idx++;
             if(len == match_idx)
                 return i - len + 1;
-        } else {
-            match_idx = 0;
         }
     }
 
@@ -71,13 +71,33 @@ int parse_cond(char strategy[] , int L , int R ,int my_mem[2] , int your_mem[2])
 
 
 int parse_condition(char strategy[] , int L , int R ,int my_mem[2] , int your_mem[2]){
-    int and_idx = find_idx(strategy , L , R , "AND");
-    int or_idx = find_idx(strategy , L , R , "OR");
+    int start_idx = L;
+    int and_idx = find_idx(strategy , start_idx , R , "AND");
+    int or_idx = find_idx(strategy , start_idx , R , "OR");
 
-    if(and_idx >= 0 && or_idx >= 0 ){
-        if(or_idx < and_idx) and_idx = -1;
-        if(and_idx < or_idx) or_idx = -1;
-    }
+    if(and_idx == -1 && or_idx == -1)
+        return parse_cond(strategy , L , R , my_mem , your_mem);
+    if(and_idx != -1)
+        start_idx = and_idx;
+    else if(or_idx != -1)
+        start_idx = or_idx;
+    else if(and_idx < or_idx)
+        start_idx = and_idx;
+    else
+        start_idx = or_idx;
+    int condition = parse_cond(strategy , start_idx , and)
+    do{
+        if(and_idx == -1){
+            start_idx = or_idx;
+        } else if(or_idx == -1){
+            start_idx = and_idx;
+        } else if( and_idx < or_idx){
+            start_idx = and_idx;
+        } else {
+            start_idx = or_idx;
+        }
+    } while( and_idx != -1 || or_idx != -1 );
+
     if(and_idx >= 0)
         return parse_cond(strategy , L , and_idx , my_mem , your_mem) || 
             parse_condition(strategy , and_idx + 3 , R , my_mem , your_mem );
@@ -88,7 +108,7 @@ int parse_condition(char strategy[] , int L , int R ,int my_mem[2] , int your_me
 }
 
 
-int parse_ifstat(char strategy[] , int L , int R ,int my_mem[2] , int your_mem[2]){
+int parse_statement(char strategy[] , int L , int R ,int my_mem[2] , int your_mem[2]){
     if(match(strategy , L , L+2 , "IF")){
         int then_idx = find_idx(strategy , L + 2 , R , "THEN");
         if(then_idx < 0) return NONE;
@@ -109,13 +129,8 @@ int parse_ifstat(char strategy[] , int L , int R ,int my_mem[2] , int your_mem[2
         else
             return parse_statement(strategy , else_idx + 4 , R , my_mem , your_mem);
 
-    } else return NONE;
-}
-
-int parse_statement(char strategy[] , int L , int R ,int my_mem[2] , int your_mem[2]){
-    int cmd = parse_command(strategy , L , R );
-    if(cmd) return cmd;
-    return parse_ifstat(strategy , L , R , my_mem , your_mem);
+    } 
+    return parse_command(strategy , L , R );
 }
 
 int program(char strategy[] ,int my_mem[2] , int your_mem[2]){
@@ -125,6 +140,7 @@ int program(char strategy[] ,int my_mem[2] , int your_mem[2]){
 int main(){
     char input[256];
     char strategy[16][256];
+    int s_len = 0;
     int i , j, k , n = 0;
 
 
@@ -133,20 +149,24 @@ int main(){
         input[--len] = 0;
         if(strcmp(input , "#") == 0)
             break;
-        int m = strlen(strategy[n]);        
         for(i = 0 ; i < len ; i++){
+            if(input[i] == '.'){
+                strategy[n++][s_len] = 0;
+                s_len = 0;
+                break;
+            }
             if(!isspace(input[i]))
-                strategy[n][m++] = input[i];
-            if(input[i] == '.')
-                strategy[n++][m] = 0;
+                strategy[n][s_len++] = input[i];
         }
     }
 
     int mem[2][2];
+    int score[16];
 
-    for(i = 0 ; i < n - 1 ; i++){
+    memset( score , 0 , sizeof(score));
+
+    for(i = 0 ; i < n ; i++){
         for(j = i + 1 ; j < n ; j++){
-            int score[2] = { 0 , 0 };
             mem[0][0] = mem[0][1] = NONE;
             mem[1][0] = mem[1][1] = NONE;
 
@@ -154,27 +174,24 @@ int main(){
                 int cmd1 = program(strategy[i] , mem[0] , mem[1]);
                 int cmd2 = program(strategy[j] , mem[1] , mem[0]);
 
-                if(cmd1 == TRADE){
-                    if(cmd2 == TRADE)
-                        score[0]++, score[1]++;
-                    if(cmd2 == CHEAT)
-                        score[0]-=2, score[1]+=2;
-                }
-                if(cmd1 == CHEAT){
-                    if(cmd2 == TRADE)
-                        score[0]+=2, score[1]-=2;
-                    if(cmd2 == CHEAT)
-                        score[0]--, score[1]--;
-                }
-
+                if(cmd1 == TRADE && cmd2 == TRADE)
+                    score[i]++, score[j]++;
+                if(cmd1 == TRADE && cmd2 == CHEAT)
+                    score[i]-=2, score[j]+=2;
+                if(cmd1 == CHEAT && cmd2 == TRADE)
+                    score[i]+=2, score[j]-=2;
+                if(cmd1 == CHEAT && cmd2 == CHEAT)
+                    score[i]--, score[j]--;
+    
                 mem[0][1] = mem[0][0];
                 mem[1][1] = mem[1][0];
                 mem[0][0] = cmd1;
                 mem[1][0] = cmd2;
             }
-
-            printf("%3d %3d\n" , score[0] , score[1]);
         }
     }
+
+    for(i = 0 ; i < n ; i++)
+        printf("%d\n" , score[i]);
     return 0;
 }
