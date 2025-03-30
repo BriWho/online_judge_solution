@@ -29,6 +29,14 @@ int find_idx(char strategy[] , int L , int R , char* w){
     return -1;
 }
 
+int min_idx(int a , int b){
+    if(a != -1 && b != -1)
+        return a < b? a : b;
+    if(a != -1) return a;
+    if(b != -1) return b;
+    return -1;
+}
+
 int parse_command(char strategy[] , int L , int R){
     if(match(strategy , L , R , "TRADE")) return TRADE;
     if(match(strategy , L , R , "CHEAT")) return CHEAT; 
@@ -62,7 +70,7 @@ int parse_cond(char strategy[] , int L , int R ,int my_mem[2] , int your_mem[2])
         int mem = parse_memory(strategy , L , not_equal_idx , my_mem , your_mem);
         if(match(strategy , L + 1 , R , "NULL" ))
             return mem == NONE;
-        return mem == parse_command(strategy , not_equal_idx + 1 , R );
+        return mem != parse_command(strategy , not_equal_idx + 1 , R );
     }
     
 
@@ -71,40 +79,45 @@ int parse_cond(char strategy[] , int L , int R ,int my_mem[2] , int your_mem[2])
 
 
 int parse_condition(char strategy[] , int L , int R ,int my_mem[2] , int your_mem[2]){
+    int and_idx = find_idx(strategy , L , R , "AND");
+    int or_idx = find_idx(strategy , L , R , "OR");
     int start_idx = L;
-    int and_idx = find_idx(strategy , start_idx , R , "AND");
-    int or_idx = find_idx(strategy , start_idx , R , "OR");
+    int cond[64];
+    int ops[64];
+    int i , n_cond = 0;
 
-    if(and_idx == -1 && or_idx == -1)
-        return parse_cond(strategy , L , R , my_mem , your_mem);
-    if(and_idx != -1)
-        start_idx = and_idx;
-    else if(or_idx != -1)
-        start_idx = or_idx;
-    else if(and_idx < or_idx)
-        start_idx = and_idx;
-    else
-        start_idx = or_idx;
-    int condition = parse_cond(strategy , start_idx , and)
-    do{
-        if(and_idx == -1){
-            start_idx = or_idx;
-        } else if(or_idx == -1){
-            start_idx = and_idx;
-        } else if( and_idx < or_idx){
-            start_idx = and_idx;
+    while( and_idx != -1 && or_idx != -1){
+        if(and_idx < or_idx){
+            ops[n_cond] = 0;
+            cond[n_cond++] = parse_cond( strategy , start_idx , and_idx , my_mem , your_mem);
+            start_idx = and_idx + 3;
+            and_idx = find_idx(strategy , start_idx , R , "AND");
         } else {
-            start_idx = or_idx;
+            ops[n_cond] = 1;
+            cond[n_cond++] = parse_cond( strategy , start_idx , or_idx , my_mem , your_mem);
+            start_idx = or_idx + 2;
+            or_idx = find_idx(strategy , start_idx , R , "OR");
         }
-    } while( and_idx != -1 || or_idx != -1 );
-
-    if(and_idx >= 0)
-        return parse_cond(strategy , L , and_idx , my_mem , your_mem) || 
-            parse_condition(strategy , and_idx + 3 , R , my_mem , your_mem );
-    if(or_idx >= 0)
-        return parse_cond(strategy , L , or_idx , my_mem , your_mem) &&
-            parse_condition(strategy , or_idx + 2 , R , my_mem , your_mem);
-    return parse_cond(strategy , L , R , my_mem , your_mem);
+    }
+    while( and_idx != -1){
+        ops[n_cond] = 0;
+        cond[n_cond++] = parse_cond( strategy , start_idx , and_idx , my_mem , your_mem);
+        start_idx = and_idx + 3;
+        and_idx = find_idx(strategy , start_idx , R , "AND");
+    }
+    while( or_idx != -1 ){
+        ops[n_cond] = 1;
+        cond[n_cond++] = parse_cond( strategy , start_idx , or_idx , my_mem , your_mem);
+        start_idx = or_idx + 2;
+        or_idx = find_idx(strategy , start_idx , R , "OR");
+    }
+    cond[n_cond++] = parse_cond( strategy , start_idx , R , my_mem , your_mem );
+    int condition = cond[0];
+    for(i = 1 ; i < n_cond ; i++){
+        if(ops[i-1]) condition = condition || cond[i];
+        else condition = condition && cond[i];
+    }
+    return condition;
 }
 
 
@@ -192,6 +205,6 @@ int main(){
     }
 
     for(i = 0 ; i < n ; i++)
-        printf("%d\n" , score[i]);
+        printf("%3d\n" , score[i]);
     return 0;
 }
