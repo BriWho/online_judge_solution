@@ -63,9 +63,10 @@ int parse_statement(char strategy[] , int* idx ,int my_mem[2] , int your_mem[2])
         int condition = parse_condition(strategy , idx , my_mem , your_mem);
         if(match(strategy , idx , "THEN")){
             int left = parse_statement(strategy , idx , my_mem , your_mem);
-            if(condition) return left;
+            int right = NONE;
             if(match(strategy , idx , "ELSE"))
-                return parse_statement(strategy , idx , my_mem , your_mem);
+                right = parse_statement(strategy , idx , my_mem , your_mem);
+            return condition ? left : right;
         }
         return NONE;
     } 
