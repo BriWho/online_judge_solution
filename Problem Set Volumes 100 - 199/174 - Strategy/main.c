@@ -51,9 +51,9 @@ int parse_cond(char strategy[] , int* idx ,int my_mem[2] , int your_mem[2]){
 int parse_condition(char strategy[] , int* idx ,int my_mem[2] , int your_mem[2]){
     int condition = parse_cond(strategy , idx , my_mem , your_mem);
     if(match(strategy , idx , "AND"))
-        condition = condition && parse_condition(strategy , idx , my_mem , your_mem);
+        condition = condition & parse_condition(strategy , idx , my_mem , your_mem);
     if(match(strategy , idx , "OR"))
-        condition =  condition || parse_condition(strategy , idx , my_mem , your_mem);
+        condition =  condition | parse_condition(strategy , idx , my_mem , your_mem);
     return condition;
 }
 
@@ -63,7 +63,7 @@ int parse_statement(char strategy[] , int* idx ,int my_mem[2] , int your_mem[2])
         int condition = parse_condition(strategy , idx , my_mem , your_mem);
         if(match(strategy , idx , "THEN")){
             int left = parse_statement(strategy , idx , my_mem , your_mem);
-            if(condition) left;
+            if(condition) return left;
             if(match(strategy , idx , "ELSE"))
                 return parse_statement(strategy , idx , my_mem , your_mem);
         }
@@ -123,10 +123,8 @@ int main(){
                 if(cmd1 == CHEAT && cmd2 == CHEAT)
                     score[i]--, score[j]--;
                 
-                mem[0][1] = mem[0][0];
-                mem[0][0] = cmd1; 
-                mem[1][1] = mem[1][0];
-                mem[1][0] = cmd2;
+                mem[0][1] = mem[0][0], mem[0][0] = cmd1; 
+                mem[1][1] = mem[1][0], mem[1][0] = cmd2;
             }
         }
     }
